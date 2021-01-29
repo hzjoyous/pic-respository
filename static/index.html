@@ -39,7 +39,10 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app">     <!--动态数据绑定-->
+        <my-info v-bind:data='msg' v-on:close='closeHandler'></my-info>
+        <!--静态数据绑定-->
+        <my-info data="操作有误"></my-info>
         <form action="/upload" method="post" enctype="multipart/form-data" target="nm_iframe">
             <label for="file">文件名：</label>
             <input type="file" @change="getFile($event)" multiple>
@@ -56,16 +59,61 @@
 </body>
 <script src="./vue.js"></script>
 <script src="./axios.min.js"></script>
+<link href="animate.min.css" rel="stylesheet">
+<link href="css/font-awesome.min.css" rel="stylesheet">
 <script>
+    Vue.component('my-info', {
+        template: `
+     <transition leave-active-class="animated fadeOutUpBig">
+     <div
+       v-show='isShow'
+       style="background:orange;
+          color:#fff;
+          padding:.5em 1em; 
+          border-radius:5px; 
+          margin:.5em 0; 
+          position:relative">
+       <i class="fa fa-info-circle"></i>
+       <span>{{data}}</span>
+       <i @click='close' class="fa fa-close"
+        style="position:absolute; 
+           right: 1em;
+           cursor:pointer"></i>
+     </div>
+     </transition>
+     `,
+        //注意：data必须是一个函数
+        data() {
+            return {
+                isShow: true
+            }
+        },
+        props: ['data'],
+        methods: {
+            close() {
+                //子组件向父组件发射事件
+                this.$emit('close');
+                //关闭消息框
+                this.isShow = false;
+            }
+        },
+    });
 
     var app = new Vue({
         el: '#app',
         data: {
             message: 'Hello Vue!',
             imageList: [],
-            files: ''
+            files: [],
+            msg:'添加失败！'
         },
         methods: {
+            closeHandler: function () {
+                console.log('关闭了');
+            },
+            getCdnUrl: function (image) {
+                this.msg = (` https://cdn.jsdelivr.net/gh/hzjoyous/pic-respository/` + image)
+            },
             pushRep: function () {
                 axios.get('/api/push-rep')
                     .then(function (response) {

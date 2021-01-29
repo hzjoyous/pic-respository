@@ -83,9 +83,9 @@ app.post('/api/upload', upload.any(), async (req, res) => {
     res.send(files);
 });
 
-app.get("/api/push-rep",function(rep,res){
-    execute(`git add . && git commit -m "update all" && git push`)
-})
+// app.get("/api/push-rep",function(rep,res){
+//     execute(`git add . && git commit -m "update all" && git push`)
+// })
 
 app.listen(3000)
 
