@@ -1,0 +1,133 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        body {
+            display: grid;
+            grid-template-columns: 80vw;
+            justify-content: center;
+            overflow-x: hidden;
+            margin-bottom: 3em;
+        }
+
+
+
+        .grid {
+            display: grid;
+            grid-gap: 0.25em;
+            /* grid-auto-flow: row dense; */
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-column-gap: 1px;
+            grid-row-gap: 1px;
+        }
+
+        .img-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            overflow: hidden;
+        }
+
+
+        .img-container .img {
+            overflow: scroll
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <form action="/upload" method="post" enctype="multipart/form-data" target="nm_iframe">
+            <label for="file">文件名：</label>
+            <input type="file" @change="getFile($event)" multiple>
+            <button @click="submitForm($event)">提交</button>
+        </form>
+        <div><button @click="pushRep">push</button></div>
+        <main class="grid">
+            <div v-for="image in imageList" class="img-container">
+                <img :src="image" alt="img" class="img" />
+                <button @click="getCdnUrl(image)">复制链接</button>
+            </div>
+        </main>
+    </div>
+</body>
+<script src="./vue.js"></script>
+<script src="./axios.min.js"></script>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue!',
+            imageList: [],
+            files: ''
+        },
+        methods: {
+            pushRep: function () {
+                axios.get('/api/push-rep')
+                    .then(function (response) {
+                        console.log(response);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            imageUpload: function (message) {
+                alert(message)
+            },
+            getFile(event) {
+                this.files = event.target.files;
+            },
+            submitForm(event) {
+                event.preventDefault();
+                let formData = new FormData();
+                for (var i = 0; i < this.files.length; i++) {
+                    let file = this.files[i];
+                    console.log(file);
+                    formData.append('files[' + i + ']', file);
+                }
+
+                let config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+                axios.post('/api/upload', formData, config).then(function (res) {
+                    console.log(res.data)
+                    let newImageList = res.data.map(function (value) {
+                        return value.replace(/\\/g, '/');
+                    })
+                    console.log(app.imageList)
+                    for (var j = 0, len = newImageList.length; j < len; j++) {
+                        app.imageList.unshift(newImageList[j])
+                    }
+                    console.log(app.imageList)
+                }).catch(function (error) {
+                    console.log(error)
+                })
+            }
+
+        },
+        created: function () {
+            getImageList()
+        }
+    })
+    function getImageList() {
+
+        axios.get('/api/imagelist')
+            .then(function (response) {
+                console.log(response);
+                app.imageList = response.data.map(function (value) {
+                    return value.replace(/\\/g, '/');
+                })
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+</script>
+
+</html>
