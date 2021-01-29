@@ -52,8 +52,8 @@ var storage = multer.diskStorage({
             .catch(err => {
                 console.error(err)
             })
-
-        fse.writeJson('./image/' + moment().format('YYYYMM') + "/" + (new Date().getTime()) + ".json",
+        let filetime = (new Date().getTime())
+        fse.writeJson('./image/' + moment().format('YYYYMM') + "/" + filetime + ".json",
             {
                 createAt: new Date().getTime()
             }
@@ -63,7 +63,7 @@ var storage = multer.diskStorage({
             console.error(err)
         })
 
-        cb(null, (new Date().getTime()) + extname);
+        cb(null, filetime + extname);
     }
 });
 //添加配置文件到muler对象。
